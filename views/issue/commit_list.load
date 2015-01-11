@@ -1,0 +1,8 @@
+
+<ul class="alert alert-info">
+    {{for commit in commits:}}
+	<li>{{=commit['summary']}}
+	    <em><small>{{=commit['author']['email']}}</small></em>
+	</li>
+    {{pass}}
+</ul>

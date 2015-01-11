@@ -1,0 +1,8 @@
+argparse==1.2.1
+dulwich==0.9.7
+funky==0.0.2
+gittle==0.5.0
+jedi==0.8.1-final0
+paramiko==1.10.0
+pycrypto==2.6
+wsgiref==0.1.2

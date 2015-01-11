@@ -1,0 +1,32 @@
+{{extend 'layout.html'}}
+
+<a href="{{=URL(f="new")}}">Nuevo Proyecto</a>
+
+<table class="table">
+
+    {{for project in projects:}}
+	<tr>
+	    <td>
+		<h4>{{=project.title}}</h4>
+		<a href="{{=URL(c="project", f="new", args=project.id)}}">Editar</a>
+	    </td>
+	    
+	    <td>
+		<ul>
+		    <li>
+			<a href="{{=URL(c="issue", f="index", args=project.slug)}}">
+			    Incidencias
+			</a>
+			<small>
+			({{=db((db.issue.project_uuid == project.uuid)
+			 & (db.issue.solved == False)
+			 ).count()}})
+			</small>
+		    </li>
+
+		</ul>
+	    </td>
+	</tr>
+
+    {{pass}}
+</table>

@@ -1,0 +1,45 @@
+{{extend 'layout.html'}}
+
+<a href="{{=URL(f="index", args=project.slug)}}">Incidencias</a>
+
+<div>
+    <h2>#{{=issue.project_issue_number}} {{=issue.title}}</h2>
+    <a href="{{=URL(f="edit", args=[project_slug,project_issue_number])}}">editar</a>
+
+    {{if issue.solved:}}
+	<a href="#reopen" onclick="ajax('{{=URL(f="solve", args=[project_slug, project_issue_number], vars={'issue_uuid': issue.uuid})}}', '',':eval');">reabrir</a>
+    {{else:}}
+	<a href="#solve" onclick="ajax('{{=URL(f="solve", args=[project_slug, project_issue_number], vars={'issue_uuid': issue.uuid})}}', '', ':eval');">resolver</a>
+	{{pass}}
+    
+
+    {{#=A('solve', callback=URL(f="solve", args=request.args))}}
+    
+</div>
+
+<div>
+    <ul>
+	<li>Resuelto: {{=issue.solved}}</li>
+	<li>Actualizado: {{=prettydate(issue.modified_on, T)}}</li>
+	<li>Prioridad: {{=issue.priority}}</li>
+    </ul>
+    <div>
+	{{=MARKMIN(issue.description)}}
+    </div>
+
+
+
+    <ol>
+	{{for commit in commits:}}
+	    <li>
+		<a href="#" title="{{=commit['sha']}}">{{=commit['message']}}</a>
+		<small>{{=prettydate(commit['time'])}}</small>
+	    </li>
+	{{pass}}
+    </ol>
+
+
+</div>
+
+
+{{=response.toolbar()}}

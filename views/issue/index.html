@@ -1,0 +1,30 @@
+{{extend 'layout.html'}}
+
+<a href="{{=URL(c="project", f="index")}}">Proyectos</a>
+
+<h1>{{=project.title}}</h1>
+
+<a href="{{=URL(f="new", args=project.slug)}}">Nuevo Incidencia</a>
+
+<ul>
+
+    {{for issue in project_issues:}}
+
+	<li>
+	   #{{=issue.project_issue_number}}
+	  
+	    <a href="{{=URL(f='view', args=[project_slug, issue.project_issue_number])}}">
+		{{=issue.title}} 
+	    </a>
+	    {{='✓' if issue.solved else ''}}
+	    
+	    {{if commit_related.has_key(issue.project_issue_number):}}
+
+		<small>
+		    ({{=len(commit_related[issue.project_issue_number])}} cambios relacionados)
+		</small>
+	    {{pass}}
+	</li>
+    {{pass}}
+
+</ul>
