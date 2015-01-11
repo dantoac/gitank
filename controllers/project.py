@@ -2,7 +2,7 @@
 
 def index():
 
-    projects = db(db.project).select()
+    projects = db(db.project).select(orderby=~db.project.id)
     
     return {'projects': projects}
 
