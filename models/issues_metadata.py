@@ -1,15 +1,27 @@
 
 def _get_git_data(project_repository):
     '''
-    Obtiene los 
+    Obtiene los commits relacionados a un issue:
+    issue_related = {1 : [{'sha': SHA,
+                           'message' : TEXT,
+                           'time': TIMESTAMP
+                            }],
+                     3 : [{'sha': SHA,
+                           'message' : TEXT,
+                           'time': TIMESTAMP
+                            }],
+                     5 : [{'sha': SHA,
+                           'message' : TEXT,
+                           'time': TIMESTAMP
+                            }],
+                     ...}
     '''
     import re 
     from gittle import Gittle
     from collections import defaultdict
     from datetime import datetime
     
-    related_flag = '#'
-    pattern_by_id = re.compile("\%s[0-9]+" % related_flag)
+    related_flag = ';'
     
     repo_url = project_repository
     repo = Gittle(repo_url)
@@ -18,10 +30,10 @@ def _get_git_data(project_repository):
 
     for commit in repo.log():
         #busca una referencia a un issue dentro de un commit
-        p = pattern_by_id.search(commit['message'])
-        if p:
+        pp = re.findall('[0-9]+{0}'.format(related_flag), commit['message'])
+        for p in pp:
             #crea una tupla id, sha del commit
-            related_issue_id = int(p.group().strip(related_flag))
+            related_issue_id = int(p.strip(related_flag))
             issue_related[related_issue_id].append({'sha': commit['sha'],
                                                     'message': commit['message'],
                                                     'time': datetime.utcfromtimestamp(int(commit['time']))
@@ -49,7 +61,7 @@ def _get_project_metadata(project_uuid=None,
         raise HTTP(400)
         
     project = db(query).select(db.project.ALL,
-                               #cache = (cache.ram, 3600),
+                               cache = (cache.ram, 3600),
                                cacheable = True,
                                limitby=(0,1)).first()
     
@@ -73,6 +85,7 @@ def _get_project_issues(project_uuid, fields=None):
     try:
         project_issues = db(query).select(fields_selected,
                                           cacheable = True,
+                                          #cache = (cache.ram, 60),
                                           )
     except Exception as e:
         raise e
