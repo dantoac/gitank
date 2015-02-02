@@ -11,8 +11,8 @@ def view():
     project = _get_project_metadata(project_slug = project_slug)
 
     
-    query = ((db.issue.project_uuid == project.uuid)
-             & (db.issue.project_issue_number == project_issue_number))
+    query = ((Issue.project_uuid == project.uuid)
+             & (Issue.project_issue_number == project_issue_number))
     
     issue = db(query).select(limitby=(0,1)).first()
 
@@ -27,13 +27,20 @@ def edit():
     project = _get_project_metadata(project_slug = request.args(0))
     project_issue_number = request.args(1)
 
-    query = ((db.issue.project_uuid == project.uuid) &
-             (db.issue.project_issue_number == project_issue_number))
+    # Crea lista de incidencias padre
+    Issue.issue_parent.requires = IS_EMPTY_OR(
+        IS_IN_DB(db((Issue.project_issue_number != project_issue_number)
+                    & (Issue.project_uuid == project.uuid)
+                    & (Issue.solved == False)),
+             Issue.uuid, '#%(project_issue_number)s %(title)s'))
     
-    issue_id = db(query).select(db.issue.id, limitby=(0,1)).first().id
+    query = ((Issue.project_uuid == project.uuid) &
+             (Issue.project_issue_number == project_issue_number))
+    
+    issue_id = db(query).select(Issue.id, limitby=(0,1)).first().id
 
     #form asap...
-    form = SQLFORM(db.issue, issue_id)
+    form = SQLFORM(Issue, issue_id)
 
     if form.process().accepted:
         session.flash = 'Datos actualizados'     
@@ -45,44 +52,59 @@ def edit():
     
 @auth.requires_login()
 def index():
+    '''
+    Lista las incidencias de todos los proyectos en general o alguno
+    en particular, segun el request.args(0) que se entregue.
+    '''
     # TODO: es necesario paginar...
 
     project_slug = request.args(0)
-    
-    project = _get_project_metadata(project_slug=project_slug)
-    
-    query = ((db.issue.project_uuid == project.uuid)
-             & (db.issue.solved == False)
-         )
-    
-    project_issues = db(query).select(db.issue.id,
-                                      db.issue.project_uuid,
-                                      db.issue.project_issue_number,
-                                      db.issue.title,
-                                      db.issue.solved,
+    solved = request.get_vars.solved or False
+
+    if project_slug:
+        project = _get_project_metadata(project_slug=project_slug)
+        query = ((Issue.project_uuid == project.uuid)
+                 & (Issue.solved == solved)
+             )
+        commit_related = _get_git_data(project.repository)
+    else:
+        query = ((Issue.id > 0) & (Issue.solved == solved))
+        project = None
+        commit_related = None
+
+    project_issues = db(query).select(Issue.id,
+                                      Issue.project_uuid,
+                                      Issue.project_issue_number,
+                                      Issue.title,
+                                      Issue.solved,
                                       cacheable = True,
-                                      orderby = db.issue.priority|~db.issue.id)
+                                      orderby = Issue.priority|Issue.solved|~Issue.id)
 
-    commit_related = _get_git_data(project.repository)
-
-    
-    
-    #response.view = 'views/generic.html'
-    
     return locals()
 
 
 
 def new():
 
-    project = _get_project_metadata(project_slug=request.args(0))
+    if request.args(0):
+        project = _get_project_metadata(project_slug=request.args(0))
+        Issue.project_uuid.default = project.uuid
+        Issue.project_issue_number.default = _last_project_issue_number(project.uuid)
+        
+        Issue.issue_parent.requires = IS_EMPTY_OR(
+            IS_IN_DB(db((Issue.project_uuid == project.uuid)
+                        & (Issue.solved == False)),
+                     Issue.uuid, '#%(project_issue_number)s %(title)s'))
 
-    project_issues = _get_project_issues(project.uuid)
-    
-    db.issue.project_uuid.default = project.uuid
-    db.issue.project_issue_number.default = _last_project_issue_number(project.uuid)
-    
-    form = SQLFORM(db.issue)
+
+    else:
+        Issue.issue_parent.writable = False
+        Issue.issue_parent.readable = False
+        Issue.project_uuid.requires = IS_IN_DB(db, 'project.uuid', 'project.title')
+        Issue.project_uuid.writable = True
+        Issue.project_uuid.label = 'Project'
+        
+    form = SQLFORM(Issue)
 
     if form.process().accepted:
         session.flash = 'Incidencia Registrada exitosamente'
@@ -100,7 +122,7 @@ def solve():
 
     issue_uuid = request.get_vars.issue_uuid
 
-    record = db(db.issue.uuid == issue_uuid).select(db.issue.id, db.issue.solved).first()
+    record = db(Issue.uuid == issue_uuid).select(Issue.id, Issue.solved).first()
     
     solved = False if record.solved else True
 
@@ -112,5 +134,5 @@ def solve():
     else:
         session.flash = 'Incidencia Reabierta'
 
-    redirect(URL(f='view', args=request.args), client_side=True)
+    redirect(URL(f='view', args=request.args, vars=request.get_vars), client_side=True)
 

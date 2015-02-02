@@ -1,6 +1,6 @@
 {{extend 'layout.html'}}
 
-<a href="{{=URL(f="index", args=project.slug)}}">Incidencias</a>
+<a href="{{=URL(f="index", args=project.slug)}}"><< Incidencias</a>
 
 <div>
     <h2>#{{=issue.project_issue_number}} {{=issue.title}}</h2>
@@ -41,5 +41,3 @@
 
 </div>
 
-
-{{=response.toolbar()}}

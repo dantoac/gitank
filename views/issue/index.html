@@ -1,30 +1,47 @@
 {{extend 'layout.html'}}
 
-<a href="{{=URL(c="project", f="index")}}">Proyectos</a>
+<a href="{{=URL(c="project", f="index")}}"><< Proyectos</a>
 
-<h1>{{=project.title}}</h1>
+<h1>{{='Incidencias en "{0}"'.format(project.title) if project else 'Incidencias en todos los Proyectos'}}</h1>
 
-<a href="{{=URL(f="new", args=project.slug)}}">Nuevo Incidencia</a>
+    <div class="btn-group" data-toggle="buttons-radio">
+	
 
-<ul>
+	<a class="btn btn-mini btn-primary" href="{{=URL(f="new", args=request.args(0))}}">Nueva Incidencia</a>
 
+	<a class="btn btn-mini" href="{{=URL(args=request.args, vars=dict(solved="False"))}}">Mostrar Abiertas</a>
+	<a class="btn btn-mini" href="{{=URL(args=request.args, vars=dict(solved="True"))}}">Mostrar Resueltas</a>
+	
+    </div>
+
+
+<div id="issue-list">
+
+    {{if not project_issues:}}
+	Sin incidencias
+    {{pass}}
+
+    
     {{for issue in project_issues:}}
-
-	<li>
-	   #{{=issue.project_issue_number}}
-	  
+	
+	<div class="issue">
+	    <a href="{{=URL(args=_get_project_metadata(issue.project_uuid).slug)}}">
+		{{=_get_project_metadata(issue.project_uuid).title}}
+	    </a>
+	    #{{=issue.project_issue_number}}
+	    
 	    <a href="{{=URL(f='view', args=[project_slug, issue.project_issue_number])}}">
 		{{=issue.title}} 
 	    </a>
 	    {{='✓' if issue.solved else ''}}
 	    
-	    {{if commit_related.has_key(issue.project_issue_number):}}
-
+	    {{if commit_related and commit_related.has_key(issue.project_issue_number):}}
+		
 		<small>
 		    ({{=len(commit_related[issue.project_issue_number])}} cambios relacionados)
 		</small>
 	    {{pass}}
-	</li>
+	</div>
     {{pass}}
 
-</ul>
+</div>
