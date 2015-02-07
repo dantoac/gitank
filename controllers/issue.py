@@ -66,7 +66,7 @@ def index():
         query = ((Issue.project_uuid == project.uuid)
                  & (Issue.solved == solved)
              )
-        commit_related = _get_git_data(project.repository)
+        commit_related = _get_git_data(project.repository) if project.repository else None
     else:
         query = ((Issue.id > 0) & (Issue.solved == solved))
         project = None

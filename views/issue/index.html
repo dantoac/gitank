@@ -28,7 +28,10 @@
 	    <a href="{{=URL(args=_get_project_metadata(issue.project_uuid).slug)}}">
 		{{=_get_project_metadata(issue.project_uuid).title}}
 	    </a>
-	    #{{=issue.project_issue_number}}
+
+	    <strong>
+	    {{=issue.project_issue_number}};
+	    </strong>
 	    
 	    <a href="{{=URL(f='view', args=[project_slug, issue.project_issue_number])}}">
 		{{=issue.title}} 
