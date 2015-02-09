@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 if False: from gluon import *
-from gittle import Gittle
 
 def view():
     from tools import prettydate
