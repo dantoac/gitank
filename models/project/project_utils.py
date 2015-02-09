@@ -1,4 +1,6 @@
 
+
+
 def _get_project_issue_progress(project_uuid):
     solved_count = db((db.issue.project_uuid == project_uuid)
                       &(db.issue.solved==True)).count()
