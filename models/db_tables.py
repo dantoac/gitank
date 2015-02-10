@@ -44,7 +44,7 @@ Issue = dt('issue',
                  requires=IS_NOT_IN_DB(db, 'issue.uuid')
              ),
            Field('project_uuid', 'string', length=32,
-                 writable=False, readable=False, unique=True, required=True),
+                 writable=False, readable=False, required=True),
            Field('title', 'string', required=True, requires=IS_NOT_EMPTY()),
            Field('tag','list:string'),
            Field('description', 'text'),
