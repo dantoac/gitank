@@ -1,0 +1,40 @@
+{{=form}}
+    
+    <h2>Comentarios</h2>
+    
+    {{if isinstance(comments, list):}}
+	
+	{{for comment in comments:}}
+
+	    <div id="comment-{{=comment['uuid']}}">
+		<a onclick="$(this).parent().css('background','#ffaaaa');
+			    if(confirm('Eliminar este comentario?')){
+			    ajax('{{=URL(c="comment", f="delete", args=comment['uuid'], user_signature=True)}}', '', ':eval');};
+			    $(this).parent().css('background','none');
+			    ">[x]</a>
+
+		<span>
+		    <strong>
+			{{=comment['created_on']}}
+		    </strong>
+		    &mdash;{{=comment['author']}}
+		</span>
+		
+
+		{{ if comment['title'] ==  "issue-update": }}
+		    <ul>
+			{{=XML(comment['body'])}}
+		    </ul>
+		{{else:}}
+		    
+		    {{=MARKMIN(comment['body'])}}
+		{{pass}}
+		
+		
+	    </div>
+	    
+	{{pass}}
+    {{else:}}
+	{{=comments}}
+
+    {{pass}}

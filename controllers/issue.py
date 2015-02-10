@@ -2,6 +2,7 @@
 
 if False: from gluon import *
 
+@auth.requires_login()
 def view():
     from tools import prettydate
     project_slug = request.args(0)
@@ -17,10 +18,40 @@ def view():
 
     commits_related = _get_git_data(project.repository)
     commits = commits_related[issue.project_issue_number]
+
+
+    ##comentarios
+        
+    context = request.get_vars.context
+    db.menta_comment.menta_context.default = context
+    db.menta_comment.menta_uuid.readable = False
+    db.menta_comment.menta_uuid.writable = False
+    db.menta_comment.menta_created_on.writable = False
+    db.menta_comment.menta_created_on.readable = False
+    db.menta_comment.menta_author.writable = False
+    db.menta_comment.menta_author.readable = False
+    db.menta_comment.menta_reply_to.writable = False
+    db.menta_comment.menta_reply_to.readable = False
+    db.menta_comment.menta_author.default = auth.user.email
+    db.menta_comment.menta_title.writable = False
+    db.menta_comment.menta_title.readable = False
     
+    form = SQLFORM(db.menta_comment)
+
+    if form.process().accepted:
+        response.flash = 'OK'
+        
+    elif form.errors:
+        response.flash = 'ERROR'
+
+
+    context = request.get_vars.context
+    menta = Menta(context=context)
+    comments = menta.get_comments()
+
     return locals()
 
-
+@auth.requires_login()
 def edit():
 
     project = _get_project_metadata(project_slug = request.args(0))
@@ -36,13 +67,61 @@ def edit():
     query = ((Issue.project_uuid == project.uuid) &
              (Issue.project_issue_number == project_issue_number))
     
-    issue_id = db(query).select(Issue.id, limitby=(0,1)).first().id
-
+    issue_data = db(query).select(limitby=(0,1)).first()
+    
     #form asap...
-    form = SQLFORM(Issue, issue_id)
+    form = SQLFORM(Issue, issue_data.id, formstyle='divs', showid=False)
 
-    if form.process().accepted:
-        session.flash = 'Datos actualizados'     
+    if form.process(dbio=False).accepted:
+
+        #obtenemos los nuevos datos
+        after = []
+        for k,val in form.vars.iteritems():
+            #si es una lista, es necesaria convertirla a
+            #un objecto hashable.
+            if isinstance(val, list):
+                v = ','.join(val)
+                after.append((k,v))
+            else:
+                after.append((k,val))
+
+        flds = []
+        for k in form.vars.keys():
+            flds.append(db.issue[k])
+            
+        #obtenemos los valores anteriores de los
+        #campos enviados
+        before = []
+        for k,val in db(db.issue.id == issue_data.id).select(*flds).first().as_dict().iteritems():
+            if isinstance(val, list):
+                v = ','.join(val)
+                print(v)
+                before.append((k,v))
+            else:
+                before.append((k,val))
+
+        a = set(after)
+        b = set(before)
+
+        #obtiene la diferencia entre sets
+        changed = list(a - b)
+
+        menta_body = ''.join(['''
+        <li>Modificado: {0}</li>
+        '''.format(str(T(c[0]).title()),c[1]) for c in changed])
+
+        if changed:
+            db.menta_comment.insert(**dict(
+                menta_context = issue_data.uuid,
+                menta_title = 'issue-update',
+                menta_body = menta_body,
+                menta_created_on = request.now.now(),
+                menta_author = auth.user.email)
+                )
+        #actualizamos la db
+        db(db.issue._id == issue_data.id).update(**form.vars)
+        #response.flash = 'Datos actualizados: {0}'.format(changed)
+        
         redirect(URL(f='view', args=[project.slug, project_issue_number]))
         
     elif form.errors:

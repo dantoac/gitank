@@ -33,7 +33,7 @@
 	    {{=issue.project_issue_number}};
 	    </strong>
 	    
-	    <a href="{{=URL(f='view', args=[project_slug, issue.project_issue_number])}}">
+	    <a href="{{=URL(f='view', args=[_get_project_metadata(issue.project_uuid).slug, issue.project_issue_number])}}">
 		{{=issue.title}} 
 	    </a>
 	    {{='✓' if issue.solved else ''}}
