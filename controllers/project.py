@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+@auth.requires_login()
 def index():
 
     projects = db(db.project).select(orderby=~db.project.id)
@@ -7,7 +8,7 @@ def index():
     return {'projects': projects}
 
 
-
+@auth.requires_login()
 def new():
     #TODO: separar
     form = SQLFORM(db.project, request.args(0))
