@@ -31,8 +31,8 @@ def _get_git_data(project_repository=None,
     try:
         repo.switch_branch(project_branch)
     except Exception as e:
-        #repo.switch_branch('master')
-        print(e)
+        repo.switch_branch('master')
+        print('32@issue_utils.py: %s' % e)
         
     issue_related = defaultdict(list)
 
