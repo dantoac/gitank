@@ -1,5 +1,6 @@
 
-def _get_git_data(project_repository):
+def _get_git_data(project_repository=None,
+                  project_branch=None):
     '''
     Obtiene los commits relacionados a un issue:
     issue_related = {1 : [{'sha': SHA,
@@ -26,6 +27,13 @@ def _get_git_data(project_repository):
     repo_url = project_repository
     repo = Gittle(repo_url)
 
+    #establece la rama a cotejar con las incidencias
+    try:
+        repo.switch_branch(project_branch)
+    except Exception as e:
+        #repo.switch_branch('master')
+        print(e)
+        
     issue_related = defaultdict(list)
 
     for commit in repo.log():

@@ -9,16 +9,14 @@ def view():
     project_issue_number = request.args(1)
     
     project = _get_project_metadata(project_slug = project_slug)
-
     
     query = ((Issue.project_uuid == project.uuid)
              & (Issue.project_issue_number == project_issue_number))
     
     issue = db(query).select(limitby=(0,1)).first()
 
-    commits_related = _get_git_data(project.repository)
+    commits_related = _get_git_data(project.repository, project.repository_branch) if project.repository else None
     commits = commits_related[issue.project_issue_number]
-
 
     ##comentarios
         
@@ -43,7 +41,6 @@ def view():
         
     elif form.errors:
         response.flash = 'ERROR'
-
 
     context = request.get_vars.context
     menta = Menta(context=context)
@@ -144,7 +141,7 @@ def index():
         query = ((Issue.project_uuid == project.uuid)
                  & (Issue.solved == solved)
              )
-        commit_related = _get_git_data(project.repository) if project.repository else None
+        commit_related = _get_git_data(project.repository, project.repository_branch) if project.repository else None
     else:
         query = ((Issue.id > 0) & (Issue.solved == solved))
         project = None

@@ -33,6 +33,7 @@ Project = dt('project',
                    label='Fecha Término'),
              Field('closed', 'boolean', default=False, readable=False, writable=False),
              Field('repository', 'string', length=255, comment='(Repositorio Git)'),
+             Field('repository_branch', 'string', length=255, comment='(Rama Git)'),
              auth.signature,
              format = '%(title)s'
 )
