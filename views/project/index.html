@@ -17,10 +17,13 @@
 			<a href="{{=URL(c="issue", f="index", args=project.slug)}}">
 			    Incidencias
 			</a>
-			<small>
+			{{=_get_project_issue_progress(project.uuid)}}%
 
-			    ({{=_get_project_issue_progress(project.uuid)}}%)
-			 
+			[{{=db((db.issue.project_uuid == project.uuid)
+			  &(db.issue.solved==True)).count()}} / {{=db((db.issue.project_uuid == project.uuid)).count()}}]
+			
+			</small>
+		    </li>
 
 		</ul>
 	    </td>
