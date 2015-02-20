@@ -16,7 +16,8 @@ def view():
     issue = db(query).select(limitby=(0,1)).first()
 
     commits_related = _get_git_data(project.repository, project.repository_branch) if project.repository else None
-    commits = commits_related[issue.project_issue_number]
+    
+    commits = commits_related[issue.project_issue_number] if commits_related else ''
 
     ##comentarios
         
