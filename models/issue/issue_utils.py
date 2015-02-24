@@ -24,15 +24,21 @@ def _get_git_data(project_repository=None,
     
     related_flag = ';'
     
-    repo_url = project_repository
-    repo = Gittle(repo_url)
+    
+    print(project_repository)
+    print(type(project_repository))
+
+    repo = Gittle(project_repository)
 
     #establece la rama a cotejar con las incidencias
-    try:
-        repo.switch_branch(project_branch)
-    except Exception as e:
-        repo.switch_branch('master')
-        print('32@issue_utils.py: %s' % e)
+    # try:
+    #     repo.switch_branch(project_branch)
+    #     print("RAMA: ", project_branch)
+    #     pass
+    # except Exception as e:
+    #     repo.switch_branch('master')
+    #     print('32@issue_utils.py: %s' % e)
+
         
     issue_related = defaultdict(list)
 
@@ -69,7 +75,7 @@ def _get_project_metadata(project_uuid=None,
         raise HTTP(400)
         
     project = db(query).select(db.project.ALL,
-                               cache = (cache.ram, 3600),
+                               #cache = (cache.ram, 3600),
                                cacheable = True,
                                limitby=(0,1)).first()
     
