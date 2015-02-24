@@ -142,12 +142,13 @@ def index():
         query = ((Issue.project_uuid == project.uuid)
                  & (Issue.solved == solved)
              )
-        commit_related = _get_git_data(project.repository, project.repository_branch) if project.repository else None
+        #commit_related = _get_git_data(project.repository, project.repository_branch) if project.repository else None
     else:
         query = ((Issue.id > 0) & (Issue.solved == solved))
         project = None
-        commit_related = None
+        #commit_related = None
 
+        
     project_issues = db(query).select(Issue.id,
                                       Issue.project_uuid,
                                       Issue.project_issue_number,

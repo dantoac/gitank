@@ -37,13 +37,6 @@
 		{{=issue.title}} 
 	    </a>
 	    {{='✓' if issue.solved else ''}}
-	    
-	    {{if commit_related and commit_related.has_key(issue.project_issue_number):}}
-		
-		<small>
-		    ({{=len(commit_related[issue.project_issue_number])}} cambios relacionados)
-		</small>
-	    {{pass}}
 	</div>
     {{pass}}
 
